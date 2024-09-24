@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/jekyll/cooklang/converter/version"
+require_relative "lib/jekyll-cooklang-converter/version"
 
 Gem::Specification.new do |spec|
   spec.name = "jekyll-cooklang-converter"
-  spec.version = Jekyll::Cooklang::Converter::VERSION
+  spec.version = Jekyll::CooklangConverter::VERSION
   spec.authors = ["BraeTroutman"]
   spec.email = ["btroutma@redhat.com"]
 
@@ -34,8 +34,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "example-gem", "~> 1.0"
-
+  spec.add_dependency "jekyll", "~> 4.3", ">= 4.3.4"
   # dev dependencies
   spec.add_development_dependency "rspec", "~> 3.2"
 
