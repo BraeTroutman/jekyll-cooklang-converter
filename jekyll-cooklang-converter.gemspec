@@ -35,6 +35,8 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
   spec.add_dependency "jekyll", "~> 4.3", ">= 4.3.4"
+  spec.add_dependency "cooklang_rb", "~> 0.2.0"
+
   # dev dependencies
   spec.add_development_dependency "rspec", "~> 3.2"
 
