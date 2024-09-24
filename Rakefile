@@ -2,5 +2,11 @@
 
 require "bundler/gem_tasks"
 require "standard/rake"
+require "rspec/core/rake_task"
 
-task default: :standard
+task default: [:standard, :spec]
+
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.pattern = Dir.glob("spec/**/*_spec.rb")
+  t.rspec_opts = "--format documentation"
+end
