@@ -1,4 +1,5 @@
 require "jekyll"
+require "cooklang_rb"
 require "jekyll-cooklang-converter/version"
 require "jekyll/converters/cooklang"
 

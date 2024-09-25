@@ -11,6 +11,6 @@ describe Jekyll::Converters::CooklangConverter do
   end
 
   it "outputs input to uppercase" do
-    expect(Jekyll::Converters::CooklangConverter.new.convert("hello")).to eql("HELLO")
+    expect(Jekyll::Converters::CooklangConverter.new.convert("hello\n")).to eql("HELLO\n")
   end
 end
