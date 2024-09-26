@@ -1,5 +1,85 @@
 module Jekyll
   module Converters
+    class ToHTML
+      def to_html
+        "<em>hello world</em>"
+      end
+
+      def to_list_item
+        "<li>#{to_html}</li>"
+      end
+    end
+
+    class Ingredient < ToHTML
+      def initialize(quantity, unit, name)
+        @name = name
+        @unit = unit
+        @quantity = quantity
+      end
+
+      def to_html
+        return "<em>#{@quantity}</em> #{@name}" if @unit.empty?
+        "<em>#{@quantity} #{@unit}</em> #{@name}"
+      end
+    end
+
+    class CookWare < ToHTML
+      def initialize(quantity, name)
+        @name = name
+        @quantity = quantity
+      end
+
+      def to_html
+        return @name.to_s if @quantity.empty?
+        "<em>#{@quantity}</em> #{@name}"
+      end
+    end
+
+    class OrderedList < ToHTML
+      def initialize(items)
+        @items = items
+      end
+
+      def to_html
+        list_items = @items.map do |item|
+          item.to_list_item
+        end
+        "<ol>" + list_items.join + "</ol>"
+      end
+    end
+
+    class UnorderedList < ToHTML
+      def initialize(items)
+        @items = items
+      end
+
+      def to_html
+        list_items = @items.map do |item|
+          item.to_list_item
+        end
+        "<ul>" + list_items.join + "</ul>"
+      end
+    end
+
+    class Step < ToHTML
+      def initialize(step)
+        @text = step.map do |substep|
+          case substep["type"]
+          when "cookware"
+            substep["name"]
+          when "ingredient"
+            substep["name"]
+          when "text"
+            substep["value"]
+          end
+        end.join
+      end
+
+      def to_html
+        "<p>#{@text}</p>"
+      end
+    end
+
     class CooklangConverter < Converter
       safe true
 
@@ -12,7 +92,34 @@ module Jekyll
       end
 
       def convert(content)
-        content.upcase
+        recipe = CooklangRb::Recipe.from(content)
+
+        ingredients = recipe["steps"].flatten.select { |item|
+          item["type"] == "ingredient"
+        }.map { |item|
+          Ingredient.new(item["quantity"].to_s, item["units"].to_s, item["name"].to_s)
+        }
+
+        cookware = recipe["steps"].flatten.select { |item|
+          item["type"] == "cookware"
+        }.map { |item|
+          CookWare.new(item["quantity"].to_s, item["name"].to_s)
+        }
+
+        steps = recipe["steps"].map do |step|
+          Step.new(step)
+        end
+
+        ingredients_list = UnorderedList.new(ingredients)
+        cookware_list = UnorderedList.new(cookware)
+        steps_list = OrderedList.new(steps)
+
+        "<h2>Ingredients</h2>" +
+          ingredients_list.to_html +
+          "<h2>Cookware</h2>" +
+          cookware_list.to_html +
+          "<h2>Steps</h2>" +
+          steps_list.to_html
       end
     end
   end
