@@ -23,6 +23,19 @@ module Jekyll
       end
     end
 
+    class Timer < ToHTML
+      def initialize(quantity, unit, name)
+        @name = name
+        @unit = unit
+        @quantity = quantity
+      end
+
+      def to_html
+        return "<em>#{@quantity} #{@unit}</em>" if @unit.empty?
+        "<em>#{@quantity} #{@unit}</em> (#{@name})"
+      end
+    end
+
     class CookWare < ToHTML
       def initialize(quantity, name)
         @name = name
@@ -69,6 +82,8 @@ module Jekyll
             substep["name"]
           when "ingredient"
             substep["name"]
+          when "timer"
+            "#{substep["quantity"]} #{substep["units"]}"
           when "text"
             substep["value"]
           end

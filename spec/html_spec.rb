@@ -50,6 +50,13 @@ describe Jekyll::Converters::UnorderedList do
   end
 end
 
+describe Jekyll::Converters::Timer do
+  it "becomes valid HTML" do
+    timer = described_class.new("10", "minutes", "casserole")
+    expect(timer.to_html).to eql("<em>10 minutes</em> (casserole)")
+  end
+end
+
 describe Jekyll::Converters::Step do
   it "becomes valid HTML" do
     step = Jekyll::Converters::Step.new([
