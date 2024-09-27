@@ -1,0 +1,12 @@
+name: Test site
+timezone: UTC
+markdown: kramdown
+gems:
+  - jekyll-cooklang-converter
+plugins:
+  - jekyll-cooklang-converter
+whitelist:
+  - jekyll-cooklang-converter
+collections:
+  recipes:
+    output: true
