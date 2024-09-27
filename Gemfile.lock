@@ -3,6 +3,7 @@ PATH
   specs:
     jekyll-cooklang-converter (0.1.0)
       cooklang_rb (~> 0.2.0)
+      htmlbeautifier (~> 1.4, >= 1.4.3)
       jekyll (~> 4.3, >= 4.3.4)
 
 GEM
@@ -33,6 +34,7 @@ GEM
     google-protobuf (4.28.2-x86_64-linux)
       bigdecimal
       rake (>= 13)
+    htmlbeautifier (1.4.3)
     http_parser.rb (0.8.0)
     i18n (1.14.6)
       concurrent-ruby (~> 1.0)

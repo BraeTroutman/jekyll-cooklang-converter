@@ -114,12 +114,14 @@ module Jekyll
         cookware_list = UnorderedList.new(cookware)
         steps_list = OrderedList.new(steps)
 
-        "<h2>Ingredients</h2>" +
-          ingredients_list.to_html +
-          "<h2>Cookware</h2>" +
-          cookware_list.to_html +
-          "<h2>Steps</h2>" +
-          steps_list.to_html
+        HtmlBeautifier.beautify(
+          "<h2>Ingredients</h2>" +
+            ingredients_list.to_html +
+            "<h2>Cookware</h2>" +
+            cookware_list.to_html +
+            "<h2>Steps</h2>" +
+            steps_list.to_html
+        ) + "\n"
       end
     end
   end
