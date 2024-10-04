@@ -13,6 +13,14 @@ describe Jekyll::Converters::Ingredient do
     cream = Jekyll::Converters::Ingredient.new("1", "", "onion")
     expect(cream.to_list_item).to eql("<li><em>1</em> onion</li>")
   end
+  it "rationalizes units when applicable" do
+    cream = Jekyll::Converters::Ingredient.new(0.5, "cup", "cream")
+    expect(cream.to_html).to eql("<em>1/2 cup</em> cream")
+  end
+  it "rationalizes units when applicable" do
+    cream = Jekyll::Converters::Ingredient.new(0.67, "cup", "cream")
+    expect(cream.to_html).to eql("<em>2/3 cup</em> cream")
+  end
 end
 
 describe Jekyll::Converters::CookWare do

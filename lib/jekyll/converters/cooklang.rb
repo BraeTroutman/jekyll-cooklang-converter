@@ -12,9 +12,17 @@ module Jekyll
 
     class Ingredient < ToHTML
       def initialize(quantity, unit, name)
-        @name = name
-        @unit = unit
-        @quantity = quantity
+        @name = name.to_s
+        @unit = unit.to_s
+        @quantity = if quantity.respond_to? :rationalize
+          if quantity.rationalize(0.1).denominator == 1
+            quantity.to_s
+          else
+            quantity.rationalize(0.1).to_s
+          end
+        else
+          quantity.to_s
+        end
       end
 
       def to_html
@@ -25,9 +33,9 @@ module Jekyll
 
     class Timer < ToHTML
       def initialize(quantity, unit, name)
-        @name = name
-        @unit = unit
-        @quantity = quantity
+        @name = name.to_s
+        @unit = unit.to_s
+        @quantity = quantity.to_s
       end
 
       def to_html
@@ -38,8 +46,8 @@ module Jekyll
 
     class CookWare < ToHTML
       def initialize(quantity, name)
-        @name = name
-        @quantity = quantity
+        @name = name.to_s
+        @quantity = quantity.to_s
       end
 
       def to_html
@@ -112,13 +120,13 @@ module Jekyll
         ingredients = recipe["steps"].flatten.select { |item|
           item["type"] == "ingredient"
         }.map { |item|
-          Ingredient.new(item["quantity"].to_s, item["units"].to_s, item["name"].to_s)
+          Ingredient.new(item["quantity"], item["units"], item["name"])
         }
 
         cookware = recipe["steps"].flatten.select { |item|
           item["type"] == "cookware"
         }.map { |item|
-          CookWare.new(item["quantity"].to_s, item["name"].to_s)
+          CookWare.new(item["quantity"], item["name"])
         }
 
         steps = recipe["steps"].map do |step|
