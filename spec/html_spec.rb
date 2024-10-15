@@ -18,8 +18,8 @@ describe Jekyll::Converters::Ingredient do
     expect(cream.to_html).to eql("<em>1/2 cup</em> cream")
   end
   it "rationalizes units when applicable" do
-    cream = Jekyll::Converters::Ingredient.new(0.67, "cup", "cream")
-    expect(cream.to_html).to eql("<em>2/3 cup</em> cream")
+    cream = Jekyll::Converters::Ingredient.new(0.25, "cup", "cream")
+    expect(cream.to_html).to eql("<em>1/4 cup</em> cream")
   end
 end
 

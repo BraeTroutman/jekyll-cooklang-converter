@@ -15,10 +15,10 @@ module Jekyll
         @name = name.to_s
         @unit = unit.to_s
         @quantity = if quantity.respond_to? :rationalize
-          if quantity.rationalize(0.1).denominator == 1
+          if quantity.rationalize(0.05).denominator == 1
             quantity.to_s
           else
-            quantity.rationalize(0.1).to_s
+            quantity.rationalize(0.05).to_s
           end
         else
           quantity.to_s
