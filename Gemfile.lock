@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jekyll-cooklang-converter (0.5.0)
+    jekyll-cooklang-converter (0.6.0)
       cooklang_rb (~> 0.2.0)
       htmlbeautifier (~> 1.4, >= 1.4.3)
       jekyll (~> 4.3, >= 4.3.4)
