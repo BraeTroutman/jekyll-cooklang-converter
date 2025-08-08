@@ -1,110 +1,30 @@
+require_relative "cooklang/configuration"
+require_relative "cooklang/formatters"
+require_relative "cooklang/renderers"
+require_relative "cooklang/recipe_parser"
+require_relative "cooklang/legacy_compatibility"
+
 module Jekyll
   module Converters
-    class ToHTML
-      def to_html
-        "<em>hello world</em>"
-      end
-
-      def to_list_item
-        "<li>#{to_html}</li>"
-      end
-    end
-
-    class Ingredient < ToHTML
-      def initialize(quantity, unit, name)
-        @name = name.to_s
-        @unit = unit.to_s
-        @quantity = if quantity.respond_to? :rationalize
-          if quantity.rationalize(0.05).denominator == 1
-            quantity.to_s
-          else
-            quantity.rationalize(0.05).to_s
-          end
-        else
-          quantity.to_s
-        end
-      end
-
-      def to_html
-        return "<em>#{@quantity}</em> #{@name}" if @unit.empty?
-        "<em>#{@quantity} #{@unit}</em> #{@name}"
-      end
-    end
-
-    class Timer < ToHTML
-      def initialize(quantity, unit, name)
-        @name = name.to_s
-        @unit = unit.to_s
-        @quantity = quantity.to_s
-      end
-
-      def to_html
-        return "<em>#{@quantity} #{@unit}</em>" if @unit.empty?
-        "<em>#{@quantity} #{@unit}</em> (#{@name})"
-      end
-    end
-
-    class CookWare < ToHTML
-      def initialize(quantity, name)
-        @name = name.to_s
-        @quantity = quantity.to_s
-      end
-
-      def to_html
-        return @name.to_s if @quantity.empty?
-        "<em>#{@quantity}</em> #{@name}"
-      end
-    end
-
-    class OrderedList < ToHTML
-      def initialize(items)
-        @items = items
-      end
-
-      def to_html
-        list_items = @items.map do |item|
-          item.to_list_item
-        end
-        "<ol>" + list_items.join + "</ol>"
-      end
-    end
-
-    class UnorderedList < ToHTML
-      def initialize(items)
-        @items = items
-      end
-
-      def to_html
-        list_items = @items.map do |item|
-          item.to_list_item
-        end
-        "<ul>" + list_items.join + "</ul>"
-      end
-    end
-
-    class Step < ToHTML
-      def initialize(step)
-        @text = step.map do |substep|
-          case substep["type"]
-          when "cookware"
-            substep["name"]
-          when "ingredient"
-            substep["name"]
-          when "timer"
-            "#{substep["quantity"]} #{substep["units"]}"
-          when "text"
-            substep["value"]
-          end
-        end.join
-      end
-
-      def to_html
-        "<p>#{@text}</p>"
-      end
-    end
-
     class CooklangConverter < Converter
       safe true
+
+      def initialize(config = {})
+        super
+        @site_config = config.is_a?(Hash) ? config : {}
+        # Initialize with empty config, will be overridden by Jekyll
+        @cooklang_config = nil
+        @parser = nil
+        @renderer = nil
+      end
+
+      def setup
+        return if @cooklang_config
+        site_config = @config || {}
+        @cooklang_config = Cooklang::Configuration.new(site_config)
+        @parser = Cooklang::RecipeParser.new(@cooklang_config)
+        @renderer = Cooklang::Renderers::HtmlRenderer.new(@cooklang_config)
+      end
 
       def matches(ext)
         ext =~ /^.cook/i
@@ -115,36 +35,46 @@ module Jekyll
       end
 
       def convert(content)
-        recipe = CooklangRb::Recipe.from(content)
+        setup
 
-        ingredients = recipe["steps"].flatten.select { |item|
-          item["type"] == "ingredient"
-        }.map { |item|
-          Ingredient.new(item["quantity"], item["units"], item["name"])
-        }
+        recipe_data = @parser.parse(content)
 
-        cookware = recipe["steps"].flatten.select { |item|
-          item["type"] == "cookware"
-        }.map { |item|
-          CookWare.new(item["quantity"], item["name"])
-        }
+        ingredients_html = render_ingredients_section(recipe_data[:ingredients])
+        cookware_html = render_cookware_section(recipe_data[:cookware])
+        steps_html = render_steps_section(recipe_data[:steps])
 
-        steps = recipe["steps"].map do |step|
-          Step.new(step)
-        end
+        full_html = ingredients_html + cookware_html + steps_html
 
-        ingredients_list = UnorderedList.new(ingredients)
-        cookware_list = UnorderedList.new(cookware)
-        steps_list = OrderedList.new(steps)
+        HtmlBeautifier.beautify(full_html) + "\n"
+      rescue => e
+        Jekyll.logger.error "Cooklang Converter:", "Failed to convert content: #{e.message}"
+        raise
+      end
 
-        HtmlBeautifier.beautify(
-          "<h2>Ingredients</h2>" +
-            ingredients_list.to_html +
-            "<h2>Cookware</h2>" +
-            cookware_list.to_html +
-            "<h2>Steps</h2>" +
-            steps_list.to_html
-        ) + "\n"
+      private
+
+      def render_ingredients_section(ingredients)
+        return "" if ingredients.empty?
+
+        ingredient_items = ingredients.map { |ingredient| @renderer.render_ingredient(ingredient) }
+        ingredients_list = @renderer.render_list(ingredient_items, "ul", @cooklang_config.css_classes["ingredient_list"])
+        @renderer.render_section(@cooklang_config.headings["ingredients"], ingredients_list, @cooklang_config.css_classes["ingredients_section"])
+      end
+
+      def render_cookware_section(cookware)
+        return "" if cookware.empty?
+
+        cookware_items = cookware.map { |item| @renderer.render_cookware(item) }
+        cookware_list = @renderer.render_list(cookware_items, "ul", @cooklang_config.css_classes["cookware_list"])
+        @renderer.render_section(@cooklang_config.headings["cookware"], cookware_list, @cooklang_config.css_classes["cookware_section"])
+      end
+
+      def render_steps_section(steps)
+        return "" if steps.empty?
+
+        step_items = steps.map { |step| @renderer.render_step(step) }
+        steps_list = @renderer.render_list(step_items, "ol", @cooklang_config.css_classes["steps_list"])
+        @renderer.render_section(@cooklang_config.headings["steps"], steps_list, @cooklang_config.css_classes["steps_section"])
       end
     end
   end

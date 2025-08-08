@@ -10,3 +10,5 @@ whitelist:
 collections:
   recipes:
     output: true
+cooklang:
+  legacy_mode: false
